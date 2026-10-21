@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBA - Gıda Bilgi Asistanı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+        * { font-family: 'Inter', sans-serif; }
+
+        /* Ana renk paleti:
+           Birincil  → Yeşil  : #22c55e / #16a34a / #4ade80
+           İkincil   → Beyaz  : #ffffff / #f1f5f9
+           Üçüncü    → Kırmızı: #ef4444 / #dc2626
+           Dördüncü  → Sarı   : #eab308 / #facc15
+        */
+
+        body {
+            background: #030a06;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 15% 0%, rgba(34,197,94,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 85% 30%, rgba(239,68,68,0.07) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 60% at 50% 100%, rgba(22,163,74,0.12) 0%, transparent 60%);
+        }
+
+        /* Parlama efektleri */
+        .glow-green  { box-shadow: 0 0 40px rgba(34,197,94,0.35); }
+        .glow-red    { box-shadow: 0 0 30px rgba(239,68,68,0.25); }
+        .glow-yellow { box-shadow: 0 0 30px rgba(234,179,8,0.20); }
+
+        /* Kart hover */
+        .card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(34,197,94,0.15);
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+        }
+        .card:hover {
+            border-color: rgba(34,197,94,0.55);
+            background: rgba(34,197,94,0.07);
+            transform: translateY(-6px);
+        }
+
+        /* Store badge */
+        .store-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 15px;
+            transition: all 0.25s;
+            border: 2px solid;
+        }
+
+        .badge-android {
+            background: rgba(34,197,94,0.15);
+            border-color: rgba(34,197,94,0.6);
+            color: #4ade80;
+        }
+        .badge-android:hover { background: rgba(34,197,94,0.28); transform: scale(1.04); }
+
+        .badge-ios {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.65);
+        }
+
+        /* Section ayırıcı */
+        .section-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+            opacity: 0.4;
+            margin: 0 auto;
+            width: 320px;
+        }
+
+        /* Pill tag */
+        .pill {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen text-slate-100 antialiased selection:bg-green-500 selection:text-black overflow-x-hidden">
+
+<!-- ──────────────────────────────────────────
+     1. HERO
+────────────────────────────────────────── -->
+<header class="relative py-28 text-center px-6">
+
+    <!-- Logo -->
+    <div data-aos="fade-down" class="mb-8 flex justify-center">
+        <div class="w-36 h-36 p-2 rounded-3xl flex items-center justify-center border-2 border-green-500/40 glow-green bg-black/30 hover:scale-105 transition-transform duration-300">
+            <img src="gba_logo.png" alt="GBA Logo" class="w-full h-full object-contain rounded-2xl">
+        </div>
+    </div>
+
+    <!-- Başlık -->
+    <h1 class="text-8xl md:text-[110px] font-black tracking-tighter mb-1"
+        style="background: linear-gradient(135deg,#bbf7d0 0%,#22c55e 45%,#86efac 100%);
+               -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+        GBA
+    </h1>
+
+    <p class="text-xl md:text-2xl font-black uppercase tracking-[0.35em] text-green-400 mb-10">
+        Gıda Bilgi Asistanı
+    </p>
+
+    <h2 data-aos="fade-up" data-aos-delay="80"
+        class="text-3xl md:text-5xl font-black text-white max-w-4xl mx-auto leading-tight mb-6">
+        Tükettiğin Gıdanın <span class="text-green-400">Bilincinde</span> Misin?
+    </h2>
+
+    <p data-aos="fade-up" data-aos-delay="160"
+       class="text-lg text-slate-300 max-w-xl mx-auto mb-12 leading-relaxed">
+        Sadece bir uygulama değil, bir <span class="text-green-300 font-bold">bilinç hareketi.</span><br>
+        Ambalaj arkasındaki gerçeği saniyeler içinde öğren.
+    </p>
+
+    <!-- Platform Rozetleri -->
+    <div data-aos="fade-up" data-aos-delay="240" class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+
+        <!-- Android — YAKINDA -->
+        <div class="store-badge badge-ios relative cursor-default">
+            <span class="absolute -top-3 -right-3 pill bg-yellow-400 text-black">Yakında</span>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="opacity-50">
+                <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 00-.83.22l-1.88 3.24A10.52 10.52 0 0012 8c-1.64 0-3.18.39-4.48 1.06L5.65 5.82a.637.637 0 00-.83-.22c-.3.16-.42.54-.26.85L6.4 9.48A9.961 9.961 0 002 18h20c0-3.53-1.84-6.65-4.4-8.52zM7 15c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm10 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+            </svg>
+            <div class="text-left opacity-55">
+                <div class="text-xs font-semibold">Çok Yakında</div>
+                <div class="text-base font-black">Google Play</div>
+            </div>
+        </div>
+
+        <!-- iOS — YAKINDA -->
+        <div class="store-badge badge-ios relative cursor-default">
+            <span class="absolute -top-3 -right-3 pill bg-yellow-400 text-black">Yakında</span>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="opacity-50">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <div class="text-left opacity-55">
+                <div class="text-xs font-semibold">Çok Yakında</div>
+                <div class="text-base font-black">App Store</div>
+            </div>
+        </div>
+
+    </div>
+
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-8 space-y-28">
+
+    <!-- ──────────────────────────────────────────
+         2. VİZYON & MİSYON
+    ────────────────────────────────────────── -->
+    <section class="grid md:grid-cols-2 gap-8">
+
+        <div data-aos="fade-right" class="card p-10 rounded-3xl group">
+            <div class="w-16 h-16 bg-green-500/15 rounded-2xl flex items-center justify-center mb-6 border border-green-500/30 group-hover:scale-110 transition-transform">
+                <span class="text-3xl">👁️</span>
+            </div>
+            <h3 class="text-2xl font-black text-white mb-3">Vizyonumuz</h3>
+            <p class="text-slate-300 leading-relaxed">
+                Gıda sektöründeki <span class="text-red-400 font-semibold">karmaşık etiket ve içerik bilgilerini</span> anlaşılır kılarak; her bireyin ne tükettiğini saniyeler içinde, <span class="text-green-400 font-semibold">hiçbir yönlendirme olmadan</span> tam şeffaflıkla görebileceği küresel bir bilgi ve bilinç ekosistemi oluşturmak.
+            </p>
+        </div>
+
+        <div data-aos="fade-left" data-aos-delay="100" class="card p-10 rounded-3xl group">
+            <div class="w-16 h-16 bg-green-500/15 rounded-2xl flex items-center justify-center mb-6 border border-green-500/30 group-hover:scale-110 transition-transform">
+                <span class="text-3xl">🎯</span>
+            </div>
+            <h3 class="text-2xl font-black text-white mb-3">Misyonumuz</h3>
+            <p class="text-slate-300 leading-relaxed">
+                Gelişmiş <span class="text-green-400 font-bold">barkod tarama</span> ve yapay zeka altyapımızla, ambalaj arkasındaki karmaşık kimyasalları, katkı maddelerini ve alerjenleri <span class="text-yellow-300 font-semibold">kullanıcının anlayacağı yalın bir dile</span> çevirmek; toplumsal sağlığı korumak.
+            </p>
+        </div>
+
+    </section>
+
+    <!-- ──────────────────────────────────────────
+         HAKKIMIZDA / BİZ KİMİZ (YENİ EKLENEN)
+    ────────────────────────────────────────── -->
+    <section data-aos="fade-up" class="card p-10 rounded-3xl max-w-4xl mx-auto text-center border-dashed border-green-500/30">
+        <div class="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto border border-green-500/20">
+            <span class="text-3xl">🌱</span>
+        </div>
+        <h3 class="text-3xl font-black text-white mb-4">GBA'nın Arkasında Kim Var?</h3>
+        <p class="text-slate-300 leading-relaxed text-base max-w-2xl mx-auto">
+            GBA, ambalaj arkasındaki karmaşaya çözüm sunmak amacıyla doğmuş <span class="text-green-400 font-bold">bağımsız bir teknoloji girişimidir.</span> Temel amacı; ürün analizlerinde nesnel ve şeffaf kalırken, tüketicide merak ve farkındalık uyandıran, ne yediğini keşfetmesini sağlayan <span class="text-green-400 font-bold">güvenilir bir dijital rehber</span> olmaktır.
+        </p>
+    </section>
+
+    <div class="section-line"></div>
+
+    <!-- ──────────────────────────────────────────
+         3. MOBİL DENEYİM
+    ────────────────────────────────────────── -->
+    <section class="space-y-12">
+
+        <div data-aos="fade-up" class="text-center">
+            <h3 class="text-4xl font-black text-white mb-2">GBA Mobil Deneyimi</h3>
+            <div class="w-24 h-1 bg-green-500 rounded-full mx-auto mt-4 opacity-70"></div>
+        </div>
+
+        <!-- Barkod Tarama -->
+        <div data-aos="fade-up"
+             class="card p-8 rounded-3xl flex flex-col sm:flex-row items-center gap-6 max-w-3xl mx-auto">
+            <div class="text-6xl p-5 bg-green-500/10 border border-green-500/30 rounded-2xl shrink-0">📷</div>
+            <div>
+                <h4 class="text-xl font-black text-green-400 mb-2">Direkt Barkod Tarama</h4>
+                <p class="text-slate-300 leading-relaxed text-sm">
+                    Uygulama açıldığı an sizi karmaşık menülerle yormaz, doğrudan kameranızı aktif eder. Market rafındaki herhangi bir ürünün barkodunu saniyeler içinde okutup <span class="text-green-400 font-semibold">detaylı içerik analizini</span> görebilirsiniz.
+                </p>
+            </div>
+        </div>
+
+        <!-- 3 Ana Özellik -->
+        <div class="grid sm:grid-cols-3 gap-6">
+
+            <div data-aos="zoom-in-up" data-aos-delay="50"
+                 class="card p-8 rounded-3xl group hover:border-red-500/50 hover:bg-red-950/10">
+                <div class="w-14 h-14 mx-auto bg-red-500/10 rounded-xl flex items-center justify-center mb-5 border border-red-500/20 group-hover:bg-red-500/20 transition-colors">
+                    <span class="text-2xl">📢</span>
+                </div>
+                <h4 class="text-lg font-black text-red-400 mb-3 text-center">Kamuoyu Duyurusu</h4>
+                <p class="text-slate-400 text-sm leading-relaxed text-center">
+                    Tarım ve Orman Bakanlığı'nın yayınladığı taklit, tağşiş ve hileli gıda duyurularını entegre veri sistemimiz sayesinde tek elden anlık olarak deşifre edin.
+                </p>
+            </div>
+
+            <div data-aos="zoom-in-up" data-aos-delay="100"
+                 class="card p-8 rounded-3xl group hover:border-yellow-500/50 hover:bg-yellow-950/10">
+                <div class="w-14 h-14 mx-auto bg-yellow-500/10 rounded-xl flex items-center justify-center mb-5 border border-yellow-500/20 group-hover:bg-yellow-500/20 transition-colors">
+                    <span class="text-2xl">📂</span>
+                </div>
+                <h4 class="text-lg font-black text-yellow-400 mb-3 text-center">Tüm Kategoriler</h4>
+                <p class="text-slate-400 text-sm leading-relaxed text-center">
+                    Veritabanımızdaki binlerce ürünü kategorize edilmiş liste halinde görüntüleyin. Merak ettiğiniz sektörü derinlemesine inceleyin.
+                </p>
+            </div>
+
+            <div data-aos="zoom-in-up" data-aos-delay="150"
+                 class="card p-8 rounded-3xl group hover:border-green-500/50 hover:bg-green-950/10">
+                <div class="w-14 h-14 mx-auto bg-green-500/10 rounded-xl flex items-center justify-center mb-5 border border-green-500/20 group-hover:bg-green-500/20 transition-colors">
+                    <span class="text-2xl">🛒</span>
+                </div>
+                <h4 class="text-lg font-black text-green-400 mb-3 text-center">Kalori Sepeti</h4>
+                <p class="text-slate-400 text-sm leading-relaxed text-center">
+                    Günlük kalori, makro ve mikro besin değerlerinizi pratik bir sepet mantığıyla takip edin. Vücudunuza giren tüm değerleri <span class="text-green-400 font-semibold">kolayca kontrol altında</span> tutun.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="section-line"></div>
+
+    <!-- ──────────────────────────────────────────
+         4. PROFİL ANALİTİĞİ
+    ────────────────────────────────────────── -->
+    <section class="space-y-10">
+
+        <div data-aos="fade-up" class="text-center">
+            <h3 class="text-4xl font-black text-white mb-2">Kişisel Profil &amp; Veri Analitiği</h3>
+            <div class="w-24 h-1 bg-yellow-400 rounded-full mx-auto mt-4 opacity-60"></div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+
+            <div data-aos="fade-right" class="card p-8 rounded-3xl space-y-4">
+                <span class="text-4xl">📊</span>
+                <h4 class="text-xl font-black text-yellow-400">Dinamik Grafik &amp; Kalori Takibi</h4>
+                <p class="text-slate-300 leading-relaxed text-sm">
+                    Günlük tükettiğiniz besin ve kalori değerlerini şık bir grafik üzerinde görün. Geçmişe dönük kayıtlarınızla <span class="text-yellow-400 font-semibold">beslenme alışkanlıklarınızı</span> kolayca takip edin.
+                </p>
+            </div>
+
+            <div data-aos="fade-left" class="card p-8 rounded-3xl space-y-4">
+                <span class="text-4xl">📋</span>
+                <h4 class="text-xl font-black text-green-400">Haftalık İstatistiksel Özet</h4>
+                <p class="text-slate-300 text-sm mb-3">Profil ekranınız tam kapsamlı bir tüketim paneli sunar:</p>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li><span class="text-green-400 font-bold">✓ Taranan Ürün Sayısı</span> — Hafta boyunca kaç barkod deşifre edildi?</li>
+                    <li><span class="text-green-400 font-bold">✓ Sorgulanan Ürün Sayısı</span> — Toplam etkileşim hacminiz.</li>
+                    <li><span class="text-yellow-400 font-bold">✓ En Çok Bakılan Kategoriler</span> — Hangi gıda grubuna yoğunlaştınız?</li>
+                    <li><span class="text-red-400 font-bold">✓ Favori Ürün Sayısı</span> — Güvendiğiniz ve listenize eklediğiniz gıdalar.</li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="section-line"></div>
+
+    <!-- ──────────────────────────────────────────
+         5. FİLTRELEME & ERİŞİLEBİLİRLİK
+    ────────────────────────────────────────── -->
+    <section class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+
+        <div data-aos="fade-up-right" class="card p-8 rounded-3xl space-y-4 hover:border-red-500/50">
+            <div class="w-14 h-14 bg-red-500/10 rounded-xl flex items-center justify-center border border-red-500/20">
+                <span class="text-2xl">🛡️</span>
+            </div>
+            <h3 class="text-xl font-black text-white">Özel Filtreleme Mekanizması</h3>
+            <p class="text-slate-300 text-sm leading-relaxed">
+                Profiliniz üzerinden hayati zırhları aktif edebilirsiniz. Sistemimiz belirlediğiniz kriterlere uymayan gıdalarda anında kırmızı alarm verir:
+            </p>
+            <div class="flex flex-wrap gap-2 pt-1">
+                <span class="pill bg-red-500/20 text-red-300 border border-red-500/30">Alerjenler</span>
+                <span class="pill bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">Hassasiyetler</span>
+            </div>
+        </div>
+
+        <div data-aos="fade-up-left" class="card p-8 rounded-3xl space-y-4 hover:border-white/30">
+            <div class="w-14 h-14 bg-white/5 rounded-xl flex items-center justify-center border border-white/15">
+                <span class="text-2xl">⚙️</span>
+            </div>
+            <h3 class="text-xl font-black text-white">Erişilebilirlik &amp; Uygulama Ayarları</h3>
+            <p class="text-slate-300 text-sm leading-relaxed">GBA herkes için kusursuz bir deneyim vaat eder:</p>
+            <ul class="space-y-2 text-sm text-slate-400">
+                <li>• <span class="text-white font-bold">Karanlık / Aydınlık Mod</span> entegrasyonu.</li>
+                <li>• <span class="text-green-400 font-bold">Yazı Büyüklüğü</span> esnekliği.</li>
+            </ul>
+        </div>
+
+    </section>
+
+    <div class="section-line"></div>
+
+    <!-- ──────────────────────────────────────────
+         6. KEŞFET
+    ────────────────────────────────────────── -->
+    <section class="max-w-5xl mx-auto">
+        <div data-aos="fade-up"
+             class="rounded-3xl border border-green-500/30 p-12 space-y-8 glow-green"
+             style="background: linear-gradient(135deg, rgba(20,83,45,0.5) 0%, rgba(6,78,59,0.4) 100%); backdrop-filter: blur(20px);">
+
+            <h3 class="text-3xl font-black text-green-300">GBA Keşfet: Nabzı Tutun</h3>
+            <p class="text-slate-200 leading-relaxed">
+                Topluluğun anlık yönelimlerini ve gıda sektörünün en taze verilerini tek ekranda görüntüleyin:
+            </p>
+
+            <div class="grid sm:grid-cols-2 gap-5 text-sm">
+                <div class="p-5 bg-black/30 rounded-2xl border border-green-500/10">
+                    <span class="text-green-400 font-black block mb-2">📂 Popüler 3 Kategori</span>
+                    <p class="text-slate-400">Topluluk tarafından o dönem en çok sorgulanan 3 ana sektör.</p>
+                </div>
+                <div class="p-5 bg-black/30 rounded-2xl border border-green-500/10">
+                    <span class="text-green-400 font-black block mb-2">📈 Trend &amp; Popüler Ürünler</span>
+                    <p class="text-slate-400">Ambalaj arkası en çok deşifre edilen ürünlerin anlık listesi.</p>
+                </div>
+                <div class="p-5 bg-black/30 rounded-2xl border border-green-500/10">
+                    <span class="text-white font-black block mb-2">✨ Yeni Eklenenler</span>
+                    <p class="text-slate-400">Admin onayından geçerek veritabanına dahil olan en güncel ürünler.</p>
+                </div>
+                <div class="p-5 bg-black/30 rounded-2xl border border-green-500/20">
+                    <span class="text-green-400 font-black block mb-2">💡 Sana Özel Öneriler</span>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Benzer ürünler arasından senin için öne çıkan alternatifleri <span class="text-green-400 font-semibold">pratik şekilde</span> karşılaştır.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="section-line"></div>
+
+    <!-- ──────────────────────────────────────────
+         EKRAN GÖRÜNTÜLERİ — 5 EKRAN (1 + 2 + 2)
+    ────────────────────────────────────────── -->
+    <section class="space-y-10 max-w-5xl mx-auto">
+
+        <div data-aos="fade-up" class="text-center">
+            <h3 class="text-4xl font-black text-white mb-2">Uygulamadan Kareler</h3>
+            <p class="text-slate-400 text-sm mt-3">GBA'yı ilk elden deneyimleyin</p>
+            <div class="w-24 h-1 bg-green-500 rounded-full mx-auto mt-4 opacity-70"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+             1. ANA SAYFA — 1 EKRAN
+        ═══════════════════════════════════════════ -->
+        <div data-aos="fade-up" class="card p-8 sm:p-10 rounded-3xl">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+
+                <div class="order-2 md:order-1">
+                    <span class="pill bg-green-500/20 text-green-300 border border-green-500/30 mb-4">🏠 Ana Sayfa</span>
+                    <h4 class="text-2xl font-black text-white mb-3">Kategoriler Tek Ekranda</h4>
+                    <p class="text-slate-300 leading-relaxed text-sm mb-4">
+                        Kategori kartlarıyla ürünleri keşfet, en çok tarananlara göz at. Sade ve hızlı bir ana sayfa deneyimi.
+                    </p>
+                    <ul class="space-y-1.5 text-sm text-slate-400">
+                        <li>• Kategori kartları ile hızlı gezinme</li>
+                        <li>• Tek dokunuşla barkod tarama</li>
+                        <li>• Kişisel önerilere doğrudan erişim</li>
+                    </ul>
+                </div>
+
+                <div class="order-1 md:order-2 flex justify-center">
+                    <!-- 📱 Telefon Çerçevesi (mockup) -->
+                    <div class="relative w-full max-w-[360px] rounded-[2.75rem] bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 px-2 pt-7 pb-7 shadow-2xl shadow-green-500/25 ring-1 ring-white/10">
+
+                        <!-- 📷 Üst çentik -->
+                        <div class="absolute top-3 left-1/2 -translate-x-1/2 w-24 h-3 bg-black rounded-full"></div>
+
+                        <!-- 🖼️ Ekran görüntüsü (kırpılmaz, tam görünür) -->
+                        <img src="anasayfa.jpeg"
+                            alt="GBA Ana Sayfa"
+                            class="w-full h-auto rounded-[1.8rem] block">
+
+                        <!-- ⚪ Alt home bar -->
+                        <div class="absolute bottom-3 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════
+             2. ÜRÜN DETAY — 2 EKRAN (yan yana)
+        ═══════════════════════════════════════════ -->
+        <div data-aos="fade-up" class="card p-8 sm:p-10 rounded-3xl">
+            <div class="text-center mb-8">
+                <span class="pill bg-white/10 text-slate-300 border border-white/20 mb-4">🔬 Ürün Detay</span>
+                <h4 class="text-2xl font-black text-white mb-3">Ambalaj Arkasındaki Gerçek</h4>
+                <p class="text-slate-300 leading-relaxed text-sm max-w-2xl mx-auto">
+                    İçerik listesi, alerjen uyarıları ve besin değerleri. Anlaşılır, renk kodlu ve okunaklı.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto">
+
+                <!-- Ürün Detay — Ekran 1 (İçindekiler) -->
+                <div class="flex justify-center">
+                    <div class="relative w-full rounded-[2rem] bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 px-1.5 pt-6 pb-6 shadow-2xl shadow-white/10 ring-1 ring-white/10">
+                        
+                        <!-- 📷 Üst çentik -->
+                        <div class="absolute top-2.5 left-1/2 -translate-x-1/2 w-16 h-2 bg-black rounded-full"></div>
+                        
+                        <!-- 🖼️ Ekran görüntüsü -->
+                        <img src="urun_detay_bir.jpeg"
+                            alt="GBA Ürün Detay - İçindekiler"
+                            class="w-full h-auto rounded-[1.4rem] block">
+                        
+                        <!-- ⚪ Alt home bar -->
+                        <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+
+                <!-- Ürün Detay — Ekran 2 (Besin & Alerjen) -->
+                <div class="flex justify-center">
+                    <div class="relative w-full rounded-[2rem] bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 px-1.5 pt-6 pb-6 shadow-2xl shadow-white/10 ring-1 ring-white/10">
+                        
+                        <!-- 📷 Üst çentik -->
+                        <div class="absolute top-2.5 left-1/2 -translate-x-1/2 w-16 h-2 bg-black rounded-full"></div>
+                        
+                        <!-- 🖼️ Ekran görüntüsü -->
+                        <img src="urun_detay_iki.jpeg"
+                            alt="GBA Ürün Detay - Besin Değerleri ve Alerjenler"
+                            class="w-full h-auto rounded-[1.4rem] block">
+                        
+                        <!-- ⚪ Alt home bar -->
+                        <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <ul class="space-y-1.5 text-sm text-slate-400 text-center mt-8 max-w-md mx-auto">
+                <li>• Renk kodlu içerik analizi</li>
+                <li>• Size özel alerjen uyarıları</li>
+                <li>• Kalori ve besin değerleri tablosu</li>
+            </ul>
+        </div>
+        <!-- ═══════════════════════════════════════════
+             3. KEŞFET — 2 EKRAN (yan yana)
+        ═══════════════════════════════════════════ -->
+        <div data-aos="fade-up" class="card p-8 sm:p-10 rounded-3xl">
+            <div class="text-center mb-8">
+                <span class="pill bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 mb-4">✨ Keşfet</span>
+                <h4 class="text-2xl font-black text-white mb-3">Nabzı Tutun</h4>
+                <p class="text-slate-300 leading-relaxed text-sm max-w-2xl mx-auto">
+                    Topluluğun trendleri, popüler ürünler ve yeni eklenenler. Gıda dünyasının nabzı elinizin altında.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto">
+
+                <!-- Keşfet — Ekran 1 -->
+                <div class="flex justify-center">
+                    <div class="relative w-full rounded-[2rem] bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 px-1.5 pt-6 pb-6 shadow-2xl shadow-yellow-500/20 ring-1 ring-white/10">
+
+                        <!-- 📷 Üst çentik -->
+                        <div class="absolute top-2.5 left-1/2 -translate-x-1/2 w-16 h-2 bg-black rounded-full"></div>
+
+                        <!-- 🖼️ Ekran görüntüsü -->
+                        <img src="kesfet_bir.jpeg"
+                            alt="GBA Keşfet - Trend & Popüler"
+                            class="w-full h-auto rounded-[1.4rem] block">
+
+                        <!-- ⚪ Alt home bar -->
+                        <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+
+                <!-- Keşfet — Ekran 2 -->
+                <div class="flex justify-center">
+                    <div class="relative w-full rounded-[2rem] bg-gradient-to-b from-zinc-700 via-zinc-800 to-zinc-900 px-1.5 pt-6 pb-6 shadow-2xl shadow-yellow-500/20 ring-1 ring-white/10">
+
+                        <!-- 📷 Üst çentik -->
+                        <div class="absolute top-2.5 left-1/2 -translate-x-1/2 w-16 h-2 bg-black rounded-full"></div>
+
+                        <!-- 🖼️ Ekran görüntüsü -->
+                        <img src="kesfet_iki.jpeg"
+                            alt="GBA Keşfet - Yeni Eklenenler & Kategoriler"
+                            class="w-full h-auto rounded-[1.4rem] block">
+
+                        <!-- ⚪ Alt home bar -->
+                        <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-16 h-1 bg-white/40 rounded-full"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <ul class="space-y-1.5 text-sm text-slate-400 text-center mt-8 max-w-md mx-auto">
+                <li>• Trend ve popüler ürünler</li>
+                <li>• En çok sorgulanan kategoriler</li>
+                <li>• Admin onaylı yeni eklenenler</li>
+            </ul>
+        </div>
+
+    </section>
+
+    <div class="section-line"></div>
+
+    <!-- ──────────────────────────────────────────
+         SSS (İMLA VE ANLATIM DÜZELTİLDİ)
+    ────────────────────────────────────────── -->
+    <section class="max-w-3xl mx-auto space-y-6" id="sss">
+
+        <div data-aos="fade-up" class="text-center">
+            <h3 class="text-4xl font-black text-white mb-2">Sık Sorulan Sorular</h3>
+            <div class="w-24 h-1 bg-green-500 rounded-full mx-auto mt-4 opacity-70"></div>
+        </div>
+
+        <div class="space-y-3" id="faq-list">
+
+            <!-- S1 -->
+            <div data-aos="fade-up" data-aos-delay="30" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">GBA tamamen ücretsiz mi?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Temel özellikler (barkod tarama, ürün analizi, kamuoyu duyuruları, keşfet sayfası, favorilere ekleme) tamamen ücretsizdir ve ücretsiz kalmaya devam edecektir. İleride eklenecek gelişmiş özellikler için opsiyonel premium seçenekler sunulabilir; ancak mevcut içeriklere ücret biçilmeyecektir.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S2 -->
+            <div data-aos="fade-up" data-aos-delay="60" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Hesap açmadan kullanabilir miyim?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Evet. Hesap oluşturmadan misafir olarak barkod tarayabilir, ürün içeriklerine erişebilir, kamuoyu gıda duyuruları ve keşfet sayfasını kullanabilirsiniz. Ancak kişisel filtreleme (alerjen ve hassasiyet), kalori hesaplama, tarama geçmişi, favoriler ve profil analitiği gibi özellikler için ücretsiz bir hesap oluşturmanız gerekmektedir.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S3 -->
+            <div data-aos="fade-up" data-aos-delay="90" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Filtreleme ve geçmişimi görmek için kayıt olmam şart mı?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Evet. Kişisel alerjen ve hassasiyet filtrelerinizin kaydedilebilmesi, tarama geçmişinizin ve favori ürünlerinizin saklanabilmesi için hesap oluşturmanız gerekmektedir. Bu veriler yalnızca sizinle ilişkilendirilir, başkalarıyla paylaşılmaz.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S4 -->
+            <div data-aos="fade-up" data-aos-delay="120" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Kişisel verilerim güvende mi, kimler görebilir?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Kişisel verileriniz (geçmiş, favoriler, sağlık profili) şifreli olarak saklanır ve yalnızca siz tarafından görüntülenebilir. GBA, kullanıcı verilerini üçüncü taraflarla kesinlikle paylaşmaz veya satmaz. Anonimleştirilmiş trend verileri (hangi ürünlerin çok tarandığı gibi) yalnızca Keşfet sayfası istatistiklerinde kullanılır.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S5 -->
+            <div data-aos="fade-up" data-aos-delay="150" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Veritabanındaki veriler nereden geliyor, güvenilir mi?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Ürün içerikleri; üretici beyanları, resmi Tarım ve Orman Bakanlığı duyuruları ve topluluk bildirimleri olmak üzere birden fazla kaynaktan derlenmektedir. Topluluk tarafından bildirilen her yeni ürün, ekibimizin admin onay sürecinden geçtikten sonra veritabanına eklenmektedir.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S6 -->
+            <div data-aos="fade-up" data-aos-delay="180" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Uygulama internetsiz (çevrimdışı) çalışır mı?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Barkod tarama ve ürün inceleme için internet bağlantısı gerekmektedir; ürün verileri anlık olarak sunuculardan çekilmektedir. Çevrimdışı kullanım şu an desteklenmemektedir, ilerleyen sürümlerde sınırlı çevrimdışı önbellek özelliği planlanmaktadır.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S7 (DÜZELTİLDİ) -->
+            <div data-aos="fade-up" data-aos-delay="210" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Taradığım ürün veritabanında bulunamazsa ne olur?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Eğer taranan ürün henüz sistemde yoksa sizi bilgilendiriyoruz. Bu durumda ürünün ambalaj ve içerik fotoğraflarını uygulama üzerinden çekip bize göndererek veritabanının gelişmesine ve toplumsal bilincin artmasına doğrudan katkıda bulunabilirsiniz.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S8 (DÜZELTİLDİ) -->
+            <div data-aos="fade-up" data-aos-delay="240" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Kayıt olmak nasıl bir süreç, ne kadar sürer?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Kayıt süreci yalnızca e-posta ve şifre ile bir dakikadan kısa sürede tamamlanır. Sosyal hesapla (Google) hızlı giriş seçeneği de mevcuttur. Kişisel sağlık profilinizi (alerjenler, hassasiyetler) kayıt sonrasında dilediğiniz zaman doldurabilirsiniz.
+                    </p>
+                </div>
+            </div>
+
+            <!-- S9 -->
+            <div data-aos="fade-up" data-aos-delay="300" class="faq-item card rounded-2xl overflow-hidden">
+                <button onclick="toggleFaq(this)"
+                    class="w-full flex justify-between items-center p-6 text-left gap-4 hover:bg-green-500/5 transition-colors">
+                    <span class="font-bold text-white text-sm leading-snug">Yanlış veya eksik bilgi gördüğümde ne yapabilirim?</span>
+                    <span class="faq-icon text-green-400 text-xl shrink-0 transition-transform duration-300">+</span>
+                </button>
+                <div class="faq-answer hidden px-6 pb-6">
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Ürün detay sayfasındaki "Hata Bildir" butonunu kullanarak durumu doğrudan bize iletebilirsin. Bildirimin ekibimiz tarafından hızla incelenir ve doğrulandığında ürün bilgisi en kısa sürede güncellenir. Topluluk katkısı GBA'nın en büyük gücüdür.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<!-- ──────────────────────────────────────────
+     FOOTER
+────────────────────────────────────────── -->
+<footer class="border-t border-green-900/50 py-16 text-center bg-black/50 backdrop-blur-xl mt-24">
+
+    <!-- Platform durumları -->
+    <div data-aos="fade-up" class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
+
+        <!-- Android: YAKINDA -->
+        <div class="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/15 relative">
+            <span class="absolute -top-2.5 -right-2.5 pill bg-yellow-400 text-black text-[10px]">Yakında</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)">
+                <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 00-.83.22l-1.88 3.24A10.52 10.52 0 0012 8c-1.64 0-3.18.39-4.48 1.06L5.65 5.82a.637.637 0 00-.83-.22c-.3.16-.42.54-.26.85L6.4 9.48A9.961 9.961 0 002 18h20c0-3.53-1.84-6.65-4.4-8.52zM7 15c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm10 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+            </svg>
+            <div class="text-left">
+                <div class="text-[10px] text-slate-500 font-black uppercase tracking-widest">En Kısa Zamanda</div>
+                <div class="text-slate-400 font-black text-sm">Google Play Store</div>
+            </div>
+        </div>
+
+        <!-- iOS: YAKINDA -->
+        <div class="flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/5 border border-white/15 relative">
+            <span class="absolute -top-2.5 -right-2.5 pill bg-yellow-400 text-black text-[10px]">Yakında</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,0.4)">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            <div class="text-left">
+                <div class="text-[10px] text-slate-500 font-black uppercase tracking-widest">En Kısa Zamanda</div>
+                <div class="text-slate-400 font-black text-sm">App Store (iOS)</div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <p class="text-slate-500 text-sm">
+        © 2026 GBA — Gıda Bilgi Asistanı. Tüm Hakları Saklıdır.<br>
+        <a href="mailto:contact@gidabilgiasistani.com"
+           class="text-green-500 hover:text-green-300 transition-colors mt-2 inline-block font-semibold">
+            contact@gidabilgiasistani.com
+        </a>
+    </p>
+
+    <!-- KVKK & Yasal Linkler -->
+    <div class="text-xs text-slate-600 mt-4 flex flex-wrap justify-center gap-x-4 gap-y-2 px-4">
+        <a href="privacy.html" class="hover:text-green-500 transition-colors font-semibold">Gizlilik Politikası</a>
+        <span class="text-slate-800">·</span>
+        <a href="terms.html" class="hover:text-green-500 transition-colors">Kullanım Koşulları</a>
+        <span class="text-slate-800">·</span>
+        <a href="kvkk.html" class="hover:text-green-500 transition-colors">KVKK Aydınlatma Metni</a>
+        <span class="text-slate-800">·</span>
+        <a href="consent.html" class="hover:text-green-500 transition-colors">Açık Rıza Metni</a>
+    </div>
+
+</footer>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init({ duration: 900, once: true, offset: 80 });
+
+    function toggleFaq(btn) {
+        const item = btn.closest('.faq-item');
+        const answer = item.querySelector('.faq-answer');
+        const icon = btn.querySelector('.faq-icon');
+        const isOpen = !answer.classList.contains('hidden');
+
+        document.querySelectorAll('.faq-item').forEach(el => {
+            el.querySelector('.faq-answer').classList.add('hidden');
+            el.querySelector('.faq-icon').textContent = '+';
+            el.querySelector('.faq-icon').style.transform = 'rotate(0deg)';
+        });
+
+        if (!isOpen) {
+            answer.classList.remove('hidden');
+            icon.textContent = '×';
+            icon.style.transform = 'rotate(90deg)';
+        }
+    }
+</script>
+</body>
+</html>
